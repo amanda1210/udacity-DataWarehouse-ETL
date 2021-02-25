@@ -22,7 +22,7 @@ def load_staging_tables(cur, conn):
 def insert_tables(cur, conn):
     
     """
-    Insert data that in staging tables to facts and dimension tables to get final tables
+    Insert data that in staging tables to facts and dimension tables
     """
     for query in insert_table_queries:
         print(query)
@@ -37,15 +37,18 @@ def main():
     config.read('dwh.cfg')
     
     """
-    Connect to AWS Redshift cluster to execute load_taging_tables function and insert_tables function
+    Connect to AWS Redshift cluster 
+    
     """
 
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
-    print("connect successed")
+    print("connect succeed")
     cur = conn.cursor()
     
     """
-    If the connection is successful, print "connect successed"
+    Execute load_staging_tables function and insert_tables function
+    :param1 cur
+    :param2 conn
     """
     
     load_staging_tables(cur, conn)

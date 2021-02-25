@@ -47,7 +47,7 @@ staging_songs_table_create = ("""CREATE TABLE IF NOT EXISTS staging_songs(
         artist_longtitude FLOAT,
         artist_location VARCHAR(500), 
         artist_name VARCHAR(200), 
-        song_id VARCHAR(100) PRIMARY KEY, 
+        song_id VARCHAR(100), 
         title VARCHAR(200),
         duration FLOAT, 
         year INT 
@@ -59,8 +59,8 @@ songplay_table_create = ("""CREATE TABLE IF NOT EXISTS songplays(
         start_time TIMESTAMP NOT NULL,
         user_id varchar NOT NULL,
         level VARCHAR(50) ,
-        song_id VARCHAR(100) ,
-        artist_id VARCHAR(100) ,
+        song_id VARCHAR(100) NOT NULL,
+        artist_id VARCHAR(100) NOT NULL,
         session_id VARCHAR NOT NULL,
         location VARCHAR(500) ,
         user_agent VARCHAR(500) )
@@ -126,7 +126,7 @@ songplay_table_insert = ("""INSERT INTO songplays(
     session_id,
     location,
     user_agent)(
-    SELECT TIMESTAMP 'epoch' + e.ts/1000 * interval '1 second' as start_time, e.user_id, e.level, s.song_id, s.artist_id, e.session_id,e.location, e.user_agent
+    SELECT DISTINCT TIMESTAMP 'epoch' + e.ts/1000 * interval '1 second' as start_time, e.user_id, e.level, s.song_id, s.artist_id, e.session_id,e.location, e.user_agent
     FROM staging_events e
     join staging_songs s
     on e.song=s.title and s.artist_name=e.artist_name
@@ -141,7 +141,7 @@ user_table_insert = (""" INSERT INTO users(
         level)(
         SELECT DISTINCT user_id, first_name, last_name, gender,level 
         FROM staging_events
-        WHERE user_id IS NOT NULL
+        WHERE user_id IS NOT NULL AND page='NextSong'
         )
 """)
 
@@ -177,7 +177,7 @@ time_table_insert = ("""INSERT INTO time(
         month,
         year,
         weekday
-)(SELECT start_time,
+)(SELECT DISTINCT start_time,
     extract(hour from start_time)as hour,
     extract(day from start_time) as day,
     extract(week from start_time) as week,
